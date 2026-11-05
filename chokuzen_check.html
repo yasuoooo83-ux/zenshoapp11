@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>直前チェック 入力テスト</title>
+<style>
+:root{
+  --bg:#f4f6fb; --card:#fff; --ink:#1f2937; --sub:#6b7280; --line:#e5e7eb;
+  --main:#2563eb; --main-d:#1d4ed8; --ok:#16a34a; --okbg:#ecfdf5; --ng:#dc2626; --ngbg:#fef2f2;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#0f172a;--card:#1e293b;--ink:#e5e7eb;--sub:#94a3b8;--line:#334155;--main:#3b82f6;--main-d:#60a5fa;--okbg:#0f2e22;--ngbg:#3a1618}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;line-height:1.65;-webkit-text-size-adjust:100%}
+.wrap{max-width:720px;margin:0 auto;padding:16px 16px calc(40px + env(safe-area-inset-bottom))}
+h1{font-size:1.35rem;margin:8px 0 2px}
+.lead{color:var(--sub);font-size:.88rem;margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.card h2{font-size:1rem;margin:0 0 10px}
+label.cat{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+label.cat:last-child{border-bottom:none}
+label.cat input{width:20px;height:20px;flex:none}
+label.cat .n{margin-left:auto;color:var(--sub);font-size:.85rem;white-space:nowrap}
+.rangebox{display:flex;align-items:center;gap:12px}
+.rangebox input[type=range]{flex:1;height:32px}
+.rangebox .big{font-size:1.6rem;font-weight:700;min-width:3.2em;text-align:right}
+.note{font-size:.8rem;color:var(--sub);margin-top:6px}
+button{font:inherit;border:none;border-radius:12px;padding:13px 18px;cursor:pointer;font-weight:600}
+.btn{background:var(--main);color:#fff;width:100%}
+.btn:hover{background:var(--main-d)}
+.btn.sub{background:transparent;color:var(--main);border:1.5px solid var(--main)}
+.btn.warn{background:transparent;color:var(--ng);border:1.5px solid var(--ng)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>button{flex:1;min-width:140px}
+.stack>*+*{margin-top:10px}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 14px}
+.bar>i{display:block;height:100%;background:var(--main);transition:width .2s}
+.qhead{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--sub)}
+.tag{background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:.75rem}
+.qtext{font-size:1.08rem;margin:12px 0 16px;min-height:5em}
+input[type=text]{width:100%;font:inherit;font-size:1.1rem;padding:13px 14px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
+input[type=text]:focus{outline:none;border-color:var(--main)}
+.hint{font-size:.8rem;color:var(--sub);margin-top:6px}
+.score{text-align:center;padding:10px 0 4px}
+.score .pt{font-size:3rem;font-weight:800;line-height:1.1}
+.score .pc{color:var(--sub)}
+.tabs{display:flex;gap:6px;margin:6px 0 12px}
+.tabs button{flex:1;padding:9px;background:var(--card);border:1.5px solid var(--line);color:var(--ink);font-size:.9rem}
+.tabs button.on{border-color:var(--main);color:var(--main)}
+.item{border-radius:12px;padding:12px 14px;margin-bottom:10px;border:1px solid var(--line);border-left-width:6px}
+.item.ok{background:var(--okbg);border-left-color:var(--ok)}
+.item.ng{background:var(--ngbg);border-left-color:var(--ng)}
+.item .d{font-size:.92rem}
+.item .ans{margin-top:8px;font-size:.92rem}
+.item .ans b{font-weight:700}
+.item .mine{color:var(--ng)}
+.item .mine.empty{color:var(--sub)}
+.item .right{color:var(--ok);font-weight:700}
+.badge{display:inline-block;font-size:.72rem;font-weight:700;border-radius:6px;padding:1px 8px;margin-right:6px;color:#fff}
+.badge.ok{background:var(--ok)}.badge.ng{background:var(--ng)}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ホーム -->
+<section id="home">
+  <h1>直前チェック 入力テスト</h1>
+  <p class="lead">コンピュータと情報通信ネットワーク ／ 説明を読んで用語を入力しましょう</p>
+
+  <div class="card">
+    <h2>① 出題する分野</h2>
+    <div id="catList"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn sub" id="allOn" style="padding:8px">すべて選択</button>
+      <button class="btn sub" id="allOff" style="padding:8px">すべて解除</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 出題数</h2>
+    <div class="rangebox">
+      <input type="range" id="cnt" min="20" max="50" step="1" value="30">
+      <div class="big"><span id="cntV">30</span>問</div>
+    </div>
+    <div class="note" id="poolNote"></div>
+  </div>
+
+  <div class="stack">
+    <button class="btn" id="startBtn">テスト開始（ランダム順）</button>
+    <button class="btn sub" id="weakBtn">苦手問題だけで出題</button>
+    <button class="btn warn hidden" id="weakClear" style="padding:9px;font-size:.85rem">苦手リストを空にする</button>
+  </div>
+  <div class="note" id="weakNote" style="text-align:center;margin-top:10px"></div>
+  <div class="note" style="margin-top:16px">
+    ・（　）内の言葉だけの回答でもOKです（例：シングルサインオン／SSO どちらでも正解）<br>
+    ・全角／半角、大文字／小文字、ひらがな／カタカナ、長音（ー）の有無は区別しません<br>
+    ・間違えた問題は自動で「苦手リスト」に保存され、正解すると消えます
+  </div>
+</section>
+
+<!-- テスト -->
+<section id="quiz" class="hidden">
+  <div class="qhead"><span id="qno"></span><span class="tag" id="qcat"></span></div>
+  <div class="bar"><i id="qbar"></i></div>
+  <div class="card">
+    <div class="qtext" id="qtext"></div>
+    <input type="text" id="ans" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="答えを入力">
+    <div class="hint">Enterキーでも次へ進めます。空欄のまま進むと不正解になります。</div>
+  </div>
+  <div class="row">
+    <button class="btn sub" id="prevBtn">← 前へ</button>
+    <button class="btn" id="nextBtn">次へ →</button>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button class="btn sub" id="quitBtn" style="padding:8px;font-size:.85rem">中断してホームへ</button>
+  </div>
+</section>
+
+<!-- 結果 -->
+<section id="result" class="hidden">
+  <h1>結果</h1>
+  <div class="card score">
+    <div class="pt"><span id="rOk"></span><span style="font-size:1.2rem"> / <span id="rAll"></span>問</span></div>
+    <div class="pc" id="rPct"></div>
+  </div>
+  <div class="stack">
+    <button class="btn" id="retryWrong">間違えた問題だけ再テスト</button>
+    <div class="row">
+      <button class="btn sub" id="retrySame">同じ条件でもう一度</button>
+      <button class="btn sub" id="toHome">ホームへ</button>
+    </div>
+  </div>
+  <div class="tabs" style="margin-top:18px">
+    <button id="tabNg" class="on">間違えた問題</button>
+    <button id="tabAll">すべて</button>
+  </div>
+  <div id="rList"></div>
+</section>
+
+</div>
+
+<script>
+/* ===== 問題データ [説明, 答え, (追加で正解にする言葉)] ===== */
+var SECTIONS = [
+{name:"コンピュータシステムの概要（その１）", items:[
+["コンピュータを構成している装置や部品などのこと。","ハードウェア"],
+["コンピュータを構成する入力装置・記憶装置・制御装置・演算装置・出力装置の五つの装置の総称。","五大装置"],
+["私たちが取り扱う文字や数値，画像，音声，映像などを，コンピュータが処理できるデジタルデータに変換して主記憶装置などに読み込ませる装置。","入力装置"],
+["プログラムやデータ，処理結果などを記憶する装置。主記憶装置と補助記憶装置に分けられる。","記憶装置"],
+["記憶装置の命令を取り出して解読し，各装置が効率よく動作するように指示を送る装置。","制御装置"],
+["記憶装置から読み込んだデータを用いて，四則演算や比較判断などを行う装置。","演算装置"],
+["コンピュータの内部で処理されたデータを，利用者が認識できる形式（文字・数値・画像・音声・映像など）で提示する装置。","出力装置"],
+["五大装置のなかで，制御装置と演算装置をあわせた装置。パソコンでは，プロセッサや小型演算処理装置（MPU）とも呼ばれる。","中央処理装置（CPU）",["中央演算処理装置"]],
+["コンピュータ本体に組み込まれて，CPUから直接読み書きできる記憶装置。メモリ，メインメモリとも呼ばれ，ROMとRAMがある。","主記憶装置",["メモリ","メインメモリ"]],
+["CPUから直接読み書きできないが，電源を切っても記憶された内容が消えない記憶装置の総称。","補助記憶装置"],
+["入力装置や出力装置，補助記憶装置などの総称。","周辺装置"],
+["コンピュータの中心部分であるCPU（制御装置と演算装置）とメモリ（主記憶装置）を合わせた名称。","処理装置"],
+["キーを打つことで文字や数値，記号などのデータをコンピュータに入力する装置。","キーボード"],
+["コンピュータの操作全般に用いられる入力装置。平らな面の上で動かし，画面上に表示された物の場所を指し示して選択する。形状がネズミに似ている。","マウス"],
+["商品などに貼付されたり，パッケージに印刷されたりしているバーコードを，光学的に読み取る装置。","バーコードリーダ"],
+["ディスプレイ上に表示されたマークやボタンを指やペンで触れることにより，データを入力する装置。","タッチパネル"],
+["写真や絵，印刷物などの画像を光学的に読み取り，デジタルデータとして入力する装置。","イメージスキャナ"],
+["ディスプレイ上の位置情報を入力する装置の総称。マウスやペンタブレット，タッチパッド，タッチパネルなどがある。","ポインティングデバイス"],
+["キーボードやマウスから入力したデータや，コンピュータで処理した結果などを画面に表示する装置。","ディスプレイ"],
+["プリンタの印刷性能やディスプレイの表示能力など，きめ細かさや画質の滑らかさを表す尺度。単位には，dpiやppiがある。","解像度"],
+["コンピュータ内部で処理されたデータを用紙に印刷する装置の総称。","プリンタ"],
+["レーザ光で感光ドラムに印刷物の像を作り，そこにトナーを付着させて印刷する装置。ビジネス用として広く用いられている。","レーザプリンタ"],
+["インクの微粒子を紙に吹き付けることにより印刷する装置。通常，色の三原色に黒を加えたCMYKの４色のインクを用いて印刷している。","インクジェットプリンタ"],
+["三次元（3D）の形状データをもとに，熱で溶かした樹脂を何層も塗り重ねて立体物を作る装置。","三次元プリンタ（3Dプリンタ）"],
+["コンピュータ画面などの画像や動画を，スクリーンに投影する装置。","プロジェクタ"],
+["金属素材の円盤（ディスク）の表面に磁性体を塗布し，１本の軸に複数枚を取り付け，その円盤（ディスク）に読み書きする装置。","ハードディスク装置（HDD）"],
+["大容量の半導体メモリを用いた補助記憶装置。軽量かつ小型で消費電力も少なく，衝撃に強く耐久性にも優れ，高速でデータの読み書きをすることができる。","SSD"],
+["データの読み出しや書き込みに，レーザ光を使用する光ディスクを記憶媒体として用いる記憶装置の総称。","光学ドライブ"],
+["音楽を記録するために開発されたCDに記録されたデータを読み込む装置。CDの記憶容量は，最大で約700MBである。","CDドライブ"],
+["CDの記録密度を高めたDVDにデータを読み書きする装置。CDドライブと同じ赤色のレーザ光を利用する。DVDの記憶容量は，標準的な片面１層式ではCDの約７倍の4.7GB程度である。","DVDドライブ"],
+["DVDより，さらに大容量のデータが記録可能なブルーレイディスク（BD）にデータを読み書きする装置。青紫色のレーザ光を利用する。BDの記憶容量は，25GB，50GBなどである。","ブルーレイドライブ"],
+["フラッシュメモリを内蔵した小型の補助記憶装置。コンピュータなどのUSB端子に差し込んで利用する。","USBメモリ"],
+["プラスチック製のカードにフラッシュメモリが内蔵されており，広く普及しているメモリカード。標準サイズ，ミニSD，マイクロSDなどがある。","SDメモリカード"],
+["おもに静止画像を撮影し，デジタルデータに変換して記録するカメラ。動画の撮影も可能である。","デジタルカメラ"],
+["既存のコンピュータ製品以外で，インターネット接続やコンピュータ機能を搭載し，ソフトウェアによる高度な情報処理を実現できる多機能端末の総称。","スマートデバイス"],
+["各周辺装置とバスと呼ばれる伝送路を接続する部分（規格）のことで，二つの異なるものをつなぐシステムや機能である。","インタフェース"],
+["キーボードやマウス，プリンタなどの周辺装置と，パソコンなどを結ぶシリアルインタフェースの規格。一つの受け口（ポート）で，最大127台までの機器を接続することができる。","USB"],
+["パソコンおよびテレビなどのデジタル家電やAV機器，家庭用ゲーム機などで使われる，映像や音声の入出力用のインタフェースの規格。映像・音声・制御信号を１本のケーブルで送受信することができる。","HDMI"],
+["電波を利用して，数ｍから数十ｍ程度の近距離間でのデータ交換に利用されるインタフェースの規格。障害物があってもデータを送受信することができる。","Bluetooth"],
+["識別番号などを記録した小さな集積回路（IC）を組み込んだICタグを物品に添付し，電波を利用して非接触でデータ通信を行う仕組みの総称。","RFID"],
+["複数の電子回路をまとめて一つの部品として構成したもので，数ミリ角の半導体基板上に，電子回路が多数埋め込まれているもの。","集積回路（IC）"],
+["コンピュータを構成する装置の一つで，主記憶装置のこと。コンピュータ本体に組み込まれて，CPUから直接読み書きできる記憶装置である。","メモリ",["主記憶装置","メインメモリ"]],
+["データの読み出し専用のメモリのことで，電源を切っても記憶内容が消えない性質（不揮発性）がある。","ROM"],
+["データの読み出しと書き込みができるメモリのことで，電源を切ると記憶内容は消えてしまう性質（揮発性）がある。","RAM"],
+["パソコン本体にあるCPUやROM，RAMなどの主要な電子部品を搭載したプリント基板。メインボードともいう。","マザーボード"],
+["ディスプレイに映像を出力するための機能を，拡張ボードとしてマザーボードから独立させた装置。ビデオカードやグラフィックボードなどとも呼ばれる。","ビデオボード",["ビデオカード","グラフィックボード"]],
+["ビデオボードのGPUに搭載されている映像処理専用のメモリ。","VRAM"],
+["不揮発性の半導体メモリを使った補助記憶装置。消費電力が少なく，衝撃にも強い。","フラッシュメモリ",["SSD"]]
+]},
+{name:"コンピュータシステムの概要（その２）", items:[
+["連続して変化する量を，時計の針の位置や音の波形などのように連続した量（連続値）で表現する概念のこと。","アナログ"],
+["連続して変化する量を，一定の間隔で区切った数字や段階的な数値（離散値）で表現する概念のこと。","デジタル"],
+["数値の表現で，１桁を２種類の数値（「０」または「１」）で表す２進法で表された数値。","２進数"],
+["２進数の１桁のことで，情報の最小単位である。","ビット"],
+["２進数の８桁分のまとまりのことで，通常，コンピュータではこれを情報の基本単位として扱う。","バイト"],
+["ある進数（２進数や10進数など）で表記された数値を，別の進数での表記に変換すること。","基数変換"],
+["処理速度の単位で，1,000（千）分の１秒のこと。1,000μs。","ms（ミリセカンド）"],
+["処理速度の単位で，1,000,000（百万）分の１秒のこと。1,000ns。","μs（マイクロセカンド）",["マイクロ秒"]],
+["処理速度の単位で，1,000,000,000（十億）分の１秒のこと。1,000ps。","ns（ナノセカンド）"],
+["処理速度の単位で，1,000,000,000,000（一兆）分の１秒のこと。1,000fs。","ps（ピコセカンド）"],
+["処理速度の単位で，1,000,000,000,000,000（千兆）分の１秒のこと。","fs（フェムトセカンド）"],
+["記憶容量の単位で，約1,000（千）バイト（B）のこと。","KB（キロバイト）"],
+["記憶容量の単位で，約1,000,000（百万）バイト（B）のこと。約1,000KB。","MB（メガバイト）"],
+["記憶容量の単位で，約1,000,000,000（十億）バイト（B）のこと。約1,000MB。","GB（ギガバイト）"],
+["記憶容量の単位で，約1,000,000,000,000（一兆）バイト（B）のこと。約1,000GB。","TB（テラバイト）"],
+["記憶容量の単位で，約1,000,000,000,000,000（千兆）バイト（B）のこと。約1,000TB。","PB（ペタバイト）"],
+["アナログデータをデジタルデータに変換するため，連続した値を一定の時間間隔に分割し，量として取り出すこと。","標本化"],
+["標本化で取り出した量を，最も近い段階値にそろえて数値化すること。","量子化"],
+["量子化した値を，２進数の「0」と「1」の組み合わせに置きかえること。","符号化"],
+["プログラムやデータ，コンピュータを効率よく働かせるための操作方法などの総称。","ソフトウェア"],
+["ハードウェアやソフトウェア，フォルダやファイルの種類，機能などを視覚的にわかりやすく表現した画面上の小さな絵文字。","アイコン"],
+["ハードウェアやデータを管理・制御するソフトウェアで，基本ソフトウェアともいう。","オペレーティングシステム（OS）"],
+["ワープロソフトや表計算ソフト，プレゼンテーションソフトなどのように，特定の目的に利用するためのソフトウェアで，応用ソフトウェアともいう。","アプリケーションソフトウェア",["アプリケーション","アプリ"]],
+["コンピュータにソフトウェアを保存して，使用可能な状態にすることで，セットアップともいう。","インストール"],
+["コンピュータからインストールしたソフトウェアを削除して，導入前の状態に戻すこと。","アンインストール"],
+["ソフトウェアの設計図にあたるソースコードを無償で公開し，誰でもそのソフトウェアの改良，再配布を行えるようにしたソフトウェア。","オープンソースソフトウェア（OSS）"],
+["ユーザが無料で自由に使用できるソフトウェア。著作権は放棄しておらず，再配布などに制限がある場合がある。","フリーウェア"],
+["ユーザはネットワークなどから自由にソフトウェアを取得することができ，一定の試用期間内であれば料金を払わずに利用することができるもの。引き続き利用する場合は，料金を支払う必要がある。","シェアウェア"],
+["使用する場所や組織などの条件を特定し，その範囲内で必要台数分のソフトウェアのコピーと使用を許可するもの。","サイトライセンス"],
+["コンピュータの周辺機器を，オペレーティングシステム（OS）が制御するためのソフトウェア。","デバイスドライバ"],
+["ソフトウェアのプログラムのなかに，誤りや欠陥，不具合があること。バグ（bug）とは，「虫」という意味の英単語である。","バグ"],
+["バグの修正や小規模な更新のためのプログラム。「つぎ当て（する）」，「当て布（を貼る）」などの意味を持つ英単語である。","パッチ"],
+["プログラムや文書データ，画像データなどコンピュータで扱うデータのまとまり。","ファイル"],
+["データを記憶媒体に保存する際に，ファイルに付ける名前。","ファイル名"],
+["文字データだけで構成されたファイルのこと。どのような機種のコンピュータでも共通して利用できるファイル形式で，txt・csv・html形式などがある。","テキストファイル"],
+["画像や動画，音声を記録したファイル，特定のアプリケーションソフトウェアで作成されたファイルなどのこと。テキストファイル以外のすべてのファイル形式である。","バイナリファイル"],
+["ハードディスクなどの記憶媒体を，OSの記録方式に合わせて，読み書きできる状態にすること。初期化，またはイニシャライズともいう。","フォーマット"],
+["ハードディスクなどの記憶媒体で，ファイルを保存する場所のこと。ディレクトリともいう。","フォルダ",["ディレクトリ"]],
+["階層化されたフォルダの最上位のフォルダのこと。","ルートフォルダ"],
+["最上位のフォルダ以外のすべてのフォルダのこと。","サブフォルダ"],
+["ファイル名の後に付けられる「.（ドット）」以降の文字列で，ファイルの種類を表している。","拡張子"]
+]},
+{name:"情報通信ネットワークの仕組みと構成", items:[
+["データを伝送するために，通信回線などを利用して接続された網状のシステム。小規模なLAN，大規模なWAN，世界中をつなぎ合わせたインターネットまで，さまざまな規模と種類がある。","情報通信ネットワーク",["ネットワーク"]],
+["複数のコンピュータや周辺装置を通信ケーブルなどの有線や無線で接続し，データ処理を行うこと。","データ通信"],
+["音声など連続的な波形のアナログ信号が流れる通信回線。","アナログ回線"],
+["「0」と「1」のデジタル信号が流れる通信回線。","デジタル回線"],
+["限られた狭い範囲の構内ネットワークのこと。","LAN"],
+["室内や建物内の端末を通信ケーブルで結んだネットワーク。","有線LAN"],
+["室内や建物内の端末を電波による無線通信で結んだネットワーク。","無線LAN"],
+["地理的に遠く離れているため，移動に費用と時間がかかる地点間を結ぶ広域的な通信ネットワーク。","WAN"],
+["光信号を利用してデータ通信を行うための，プラスチックやガラスなどで作られた光学繊維。","光ファイバ"],
+["無線LANの一種で，国際標準規格であるIEEE802.11にもとづいて通信を行う技術。機器間同士の相互接続を可能にする。業界団体であるWi-Fiアライアンスの規格のこと。","Wi-Fi"],
+["無線で端末を接続するための電波中継機器。無線LANルータを経由して，いつでもインターネットに接続することが可能になる。","アクセスポイント"],
+["世界中の企業や大学などのネットワークを，光ファイバケーブルやルータなどで接続した世界規模のネットワーク。パケット交換による障害に強い通信システム。","インターネット"],
+["ワールド・ワイド・ウェブの略で，インターネット上で提供されているハイパーテキストシステム。","WWW"],
+["インターネットの各種サービスを提供する接続業者。","プロバイダ"],
+["ホスト名とも呼ばれ，ネットワーク上におけるコンピュータの識別に使われる文字列。ドメイン名の前に記述される「www」の部分にあたる。","サーバ名",["ホスト名"]],
+["インターネット上のサーバに付けられた，ネットワークを識別するための人間にとってわかりやすい名前のこと。","ドメイン名"],
+["コンピュータやルータなど，ネットワークに接続する機器に対して，それぞれが識別できるように割り当てた番号。","IPアドレス"],
+["32ビットのIPアドレス。2³²で，約43億通りの表現が可能である。","IPv4"],
+["128ビットのIPアドレス。2¹²⁸で，約340澗通りの表現が可能である。","IPv6"],
+["インターネット上で用いられるIPアドレスで，重複があってはならない。","グローバルIPアドレス",["グローバルIP"]],
+["ある特定のLAN内で用いられるIPアドレス。","プライベートIPアドレス",["プライベートIP"]],
+["指定されたドメイン名を，通信に必要なIPアドレスに相互に変換する仕組み。","DNS"],
+["インターネットで公開されているWebサーバ上にあり，ブラウザで閲覧可能な文書のまとまり。","Webページ",["ウェブページ"]],
+["HTMLなどで記述されているWebページをコンピュータで表示するためのソフトウェア。","ブラウザ"],
+["インターネットにおいて，HTML文書や画像などが保存されているファイルの場所を示すアドレス。","URL"],
+["HTML文書や画像などのWebページの情報を蓄積しておき，ブラウザからの要求に応じて，ネットワークを通じてWebページの情報を送信するサーバ。","Webサーバ",["ウェブサーバ"]],
+["Webページ上で，特定の文字列や画像をクリックすると，リンク先として指定した他のページへ即座に接続を切り替えて移動できる機能。","ハイパーリンク"],
+["Webページを作成するためのマークアップ言語のこと。","HTML"],
+["メールアドレスを使って実際の手紙のように，特定の相手と文字や画像などを送受信することができるもの。","電子メール",["メール","Eメール","E-mail"]],
+["電子メールの作成や送受信などを行うソフトウェア。","メーラ"],
+["Webページのような装飾情報を持った形式のメール。","HTMLメール"],
+["メーラの機能をそなえたメールサービスを行うサーバに，ブラウザでアクセスして利用することができるメール。","Webメール",["ウェブメール"]],
+["電子メールの送受信を行うサーバで，おもに送信用のSMTPサーバと受信用のPOP3またはIMAP4サーバから構成されているもの。","メールサーバ"],
+["メールサーバで個人ごとの電子メールが保存される場所。","メールボックス"],
+["ネットワーク上でコンピュータが行う通信に関する取り決めの規則。","プロトコル（通信規約）",["通信規約"]],
+["インターネットを利用するときの標準的なプロトコル。","TCP/IP"],
+["ネットワークに接続したコンピュータに，自動的にIPアドレスなどを割り当てるプロトコル。","DHCP"],
+["Webページの送受信に利用するプロトコル。","HTTP"],
+["ネットワーク上でファイルを転送するためのプロトコル。","FTP"],
+["メールの送信・転送に用いられるプロトコル。","SMTP"],
+["メールの受信に用いられるプロトコル。","POP3"],
+["メールをメールサーバ上で管理するプロトコル。","IMAP4"]
+]},
+{name:"情報通信ネットワークの活用", items:[
+["自分のコンピュータにあるプログラムやデータを，ネットワークを通してインターネット上のサーバなどに転送し保存すること。","アップロード"],
+["インターネット上のサーバに公開されているプログラムやデータを，ネットワークを通して自分のコンピュータに転送し保存すること。","ダウンロード"],
+["インターネット上で公開されている膨大なWebページのなかから，目的のWebページを効率よく探し出すことができるシステム。","検索エンジン"],
+["指定したキーワードを含むWebページを探し出す検索方法。","キーワード型検索"],
+["分類されたカテゴリのなかから目的の項目を順にたどっていく検索方法。","ディレクトリ型検索"],
+["検索エンジンによる検索結果で，自社のWebサイトを上位に表示させるための取り組みや工夫のこと。","SEO（検索エンジン最適化）"],
+["インターネットを通じてコンピュータに出入りする情報を監視し，コンテンツ（内容）に問題があるものを排除・遮断して通信させない技術。","コンテンツフィルタリング"],
+["コンテンツフィルタリングで，問題のあるサイトを登録し，それ以外のサイトなどの閲覧を許可する方式。","ブラックリスト方式",["ブラックリスト"]],
+["コンテンツフィルタリングで，問題のないサイトのみを登録し，それ以外のサイトなどの閲覧を拒否する方式。","ホワイトリスト方式",["ホワイトリスト"]],
+["電子メールの機能を利用して，多人数での連絡や情報共有などを行う仕組み。","メーリングリスト"],
+["メーラで，電子メールを直接送信したい相手のメールアドレスを入力する場所。","TO"],
+["メーラで，本来の電子メールを送信したい相手（TOで指定）以外の人にも，同じ内容のメール（写し）を送信したいときにメールアドレスを入力する場所。ここに入力したメールアドレスは，すべての受信者に表示される。","CC"],
+["メーラで，TOで指定した相手以外にも，同じ内容のメール（写し）を送信したいときにメールアドレスを入力する場所。ここに入力したメールアドレスは，受信者以外の他の受信者には表示されない。","BCC"],
+["電子メールの本文と一緒に送付される，送信者が指定したファイル。","添付ファイル"],
+["電子メールで，ファイルサイズが大きい添付ファイルを送る場合などに，必要に応じて送信前に，OSの機能や特定のソフトウェアでファイルサイズを減らすこと。","圧縮"],
+["圧縮されたファイルを，同じ圧縮形式を扱えるOSやソフトウェアでもとの状態に復元すること。","解凍",["展開"]],
+["データを完全にもとの状態に戻すことができる圧縮方法。","可逆圧縮"],
+["画像や音声などを高い圧縮率で保存する代わりに，完全な復元を前提としない圧縮方法。","非可逆圧縮"]
+]},
+{name:"情報セキュリティの確保と法規", items:[
+["ネットワークを通じて正規の利用権限を持たない悪意のある第三者が，遠隔操作で情報システムの破壊やシステム機能の停止，データの改ざんや詐取などの不正な行為を行うこと。","サイバー攻撃"],
+["他人のコンピュータやコンピュータシステムに，被害を与える目的で作られた悪意のあるソフトウェアの総称。","マルウェア"],
+["プログラムの一部に組み込まれて動作し，プログラムが実行されると不正な処理を行うほか，自分で自分のコピーを作って増殖（自己増殖）するマルウェア。単体では活動できないので，寄生するファイルやソフトウェアが必要となる。","コンピュータウイルス",["ウイルス"]],
+["利用者に関する情報を収集して，外部の企業や個人に送信するマルウェア。","スパイウェア"],
+["スパイウェアの中で，パソコンのキーボード操作を監視して情報を盗み出すマルウェア。","キーロガー"],
+["一見無害なファイルやソフトウェアを装ってコンピュータに侵入し，外部から不正な操作を行うマルウェア。","トロイの木馬"],
+["コンピュータシステムに自分で自分のコピーを大量に作成（自己増殖）して，さまざまな不具合を起こすマルウェア。独立したプログラムであり，単体で存在・活動することができる。","ワーム"],
+["感染するとコンピュータ内に保存しているデータが暗号化されて使えなくなり，もとに戻すことと引き換えに，身代金を要求するマルウェア。","ランサムウェア"],
+["コンピュータシステムの弱点やソフトウェアのバグのなかで，特にセキュリティ上の欠陥のこと。","セキュリティホール"],
+["コンピュータやネットワーク機能，セキュリティへの脅威やリスクとなる事柄で，重大な結果につながりかねない，事故の一歩手前の状態などのこと。","インシデント"],
+["相手の同意なしに一方的に送り付けて，受信者が不快な思いをするような電子メールの総称。","迷惑メール"],
+["不特定多数の受信者に対して，一方的に大量に発信される広告や勧誘などを内容とした迷惑メール。","スパムメール",["スパム"]],
+["自分に着信したメールを，誰かに転送しないと不幸になるなどと巧妙な文面を用いて，受信者に対して不特定多数への転送を促す迷惑メール。","チェーンメール"],
+["ポップアップ広告やバナー広告を表示させて，収益を得ることを目的としたソフトウェア。個人情報を盗み出すなど，悪質なものも存在する。","アドウェア"],
+["情報の機密性，完全性，可用性を維持すること。","情報セキュリティ"],
+["情報セキュリティを確保するため，どのような情報をどのような脅威から守るか，責任者，該当する法令や教育などもあわせ，具体的な対策をまとめたもの。","情報セキュリティポリシー"],
+["情報セキュリティを確保するため，対策をシステム化して継続的に改善していくための仕組み。","情報セキュリティマネジメントシステム（ISMS）"],
+["企業の内部情報や個人情報などにアクセスする権限がない人には情報を操作させないようにし，外部に情報を流出させないこと。","機密性"],
+["情報が外部の第三者に意図しない内容に書きかえられないようにし，最新で正しく使えること。","完全性"],
+["必要な情報へのアクセス権限を持っている人に対していつでも利用可能にし，必要なときにアクセスすることができること。","可用性"],
+["データのコピーを，外付けハードディスクやUSBメモリ，クラウドなどの別の記憶媒体に保存すること。","バックアップ"],
+["すべてのデータのコピーを記録するバックアップ方式。","フルバックアップ"],
+["前回のフルバックアップからの変更点（データの追加や更新）のみを記録するバックアップ方式。","差分バックアップ"],
+["コンピュータ内部でやり取りされるデータとパターンファイル（ウイルス定義ファイル）を比較し，ウイルスを検出して除去するソフトウェア。","ウイルス対策ソフトウェア",["ウイルス対策ソフト"]],
+["マルウェアの特徴を記録したウイルス検出用のファイル。","パターンファイル（ウイルス定義ファイル）",["ウイルス定義ファイル"]],
+["ソフトウェアを最新の状態に更新すること。","アップデート"],
+["ソフトウェアにセキュリティ上の弱点（セキュリティホール）が発見された際に，利用者に配布される修正プログラム。","セキュリティパッチ"],
+["コンピュータやネットワークを利用するときに行う本人確認のこと。","認証"],
+["本人確認に，指紋認証や静脈パターン認証，虹彩認証，声紋認証，顔認証，網膜認証などがある認証の方法。","生体認証"],
+["本人確認に，複数の異なる要素を組み合わせて認証を行う方法。","多要素認証"],
+["認証で，「知識」（本人が知っていること），「所有」（本人が持っているもの），「生体」（本人の身体的な特徴）の三つの要素のこと。","認証の三要素"],
+["本人確認に，２回以上の認証を連続して行う方法。認証の回数が重要となるので，認証の要素の組み合わせは同じでもかまわない。","多段階認証"],
+["１回の認証で，複数の異なるソフトウェアやサービスなどを利用できるようにする仕組み。","シングルサインオン（SSO）"],
+["認証を受けて，コンピュータの利用やネットワークサービスの利用を開始する操作。","ログイン"],
+["コンピュータの利用やネットワークサービスの利用を終了し，認証を解除する操作。","ログアウト"],
+["本人確認に用いるパスワードとして，短時間（数十秒から数分）のみ有効な，その場限りの文字列を生成して用いる方法。","ワンタイムパスワード"],
+["コンピュータやネットワークを利用できる権限。","アクセス権"],
+["利用者によってアクセス権を制限すること。","アクセス制限"],
+["ファイルの追加・変更・削除などのすべての操作が可能なアクセス権。","フルコントロール"],
+["変更や削除を制限したアクセス権。","読み取り専用"],
+["表示を制限したアクセス権。","書き込み専用"],
+["インターネットなどのネットワークを通じて文書や画像などをやり取りする際に，通信途中で第三者に盗み見られないように，解読できないデータに変換すること。","暗号化"],
+["暗号化されたデータのこと。","暗号文"],
+["暗号化された文を，正規の受信者がもとの文（平文）に戻すこと。","復号"],
+["送信者（暗号化する側）と受信者（復号する側）が，同じ鍵を使用する暗号方式。","共通鍵暗号方式"],
+["暗号化と復号に，異なる鍵を使用する暗号方式。","公開鍵暗号方式"],
+["共通鍵暗号方式や公開鍵暗号方式などを組み合わせた，Web上の暗号化の通信方式。","TLS（SSL/TLS）",["SSL"]],
+["データ暗号化機能を，HTMLファイルなどを転送するときに用いるプロトコルのHTTPに付加したもの。","HTTPS"],
+["日常生活で使われる署名と同じように，コンピュータ上で本人であることを識別し，確認するためのもの。紙文書での印やサインに相当する。","電子署名"],
+["公開鍵暗号方式を利用した電子署名を実現する具体的な仕組み。","デジタル署名"],
+["電子商取引で利用される暗号化通信などで，必要となる電子証明書（デジタル証明書）を発行する機関。","認証局（CA）"]
+]}
+];
+
+/* ===== 判定ロジック ===== */
+function norm(s){
+  return String(s||"").normalize("NFKC").toLowerCase()
+    .replace(/[ぁ-ゖ]/g,function(c){return String.fromCharCode(c.charCodeAt(0)+0x60);})
+    .replace(/[\s\u3000・\-‐‑–—−ー\/\.,、。，．]/g,"")
+    .replace(/[()（）「」『』]/g,"");
+}
+function acceptedList(item){
+  var a=item[1], alts=item[2]||[];
+  var raw=[a];
+  var m=a.match(/^(.*?)[（(](.*)[）)]\s*$/);
+  if(m){
+    raw.push(m[1]); raw.push(m[2]); raw.push(m[1]+m[2]);
+    m[2].split("/").forEach(function(p){raw.push(p);});
+  }
+  raw=raw.concat(alts);
+  var out=[];
+  raw.forEach(function(r){var n=norm(r); if(n && out.indexOf(n)<0) out.push(n);});
+  return out;
+}
+function judge(item,input){
+  var n=norm(input);
+  if(!n) return false;
+  return acceptedList(item).indexOf(n)>=0;
+}
+
+/* ===== 状態 ===== */
+var ALL=[]; // {id,sec,secName,d,a,alts}
+SECTIONS.forEach(function(s,si){
+  s.items.forEach(function(it,i){
+    ALL.push({id:si*100+i,sec:si,secName:s.name,d:it[0],a:it[1],raw:it});
+  });
+});
+var BYID={}; ALL.forEach(function(q){BYID[q.id]=q;});
+
+var LS_KEY="chokuzen_check_weak_v1";
+function loadWeak(){try{var v=JSON.parse(localStorage.getItem(LS_KEY)||"[]");return Array.isArray(v)?v.filter(function(i){return BYID[i];}):[];}catch(e){return [];}}
+function saveWeak(list){try{localStorage.setItem(LS_KEY,JSON.stringify(list));}catch(e){}}
+
+var state={list:[],answers:[],idx:0,results:[],lastConfig:null};
+
+/* ===== 画面 ===== */
+function $(id){return document.getElementById(id);}
+function show(id){["home","quiz","result"].forEach(function(s){$(s).classList.toggle("hidden",s!==id);});window.scrollTo(0,0);}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+
+function selectedSecs(){
+  var r=[];document.querySelectorAll("#catList input").forEach(function(c){if(c.checked)r.push(+c.value);});return r;
+}
+function poolSize(){
+  var secs=selectedSecs();return ALL.filter(function(q){return secs.indexOf(q.sec)>=0;}).length;
+}
+function updateHome(){
+  var pool=poolSize(), n=+$("cnt").value;
+  $("cntV").textContent=n;
+  $("poolNote").textContent = pool===0 ? "分野を1つ以上選んでください"
+    : (n>pool ? "選択した分野は全"+pool+"問のため、"+pool+"問を出題します" : "選択した分野：全"+pool+"問からランダムに出題");
+  $("startBtn").disabled = pool===0;
+  var w=loadWeak();
+  $("weakBtn").disabled = w.length===0;
+  $("weakBtn").textContent = "苦手問題だけで出題（"+w.length+"問）";
+  $("weakClear").classList.toggle("hidden",w.length===0);
+  $("weakNote").textContent = w.length? "" : "まだ苦手問題はありません（間違えた問題が自動で貯まります）";
+}
+function buildHome(){
+  var h="";
+  SECTIONS.forEach(function(s,i){
+    h+='<label class="cat"><input type="checkbox" value="'+i+'" checked><span>'+esc(s.name)+'</span><span class="n">'+s.items.length+'問</span></label>';
+  });
+  $("catList").innerHTML=h;
+  document.querySelectorAll("#catList input").forEach(function(c){c.addEventListener("change",updateHome);});
+  updateHome();
+}
+
+function startQuiz(qs,config){
+  state.list=qs; state.answers=qs.map(function(){return "";}); state.idx=0; state.lastConfig=config;
+  show("quiz"); renderQ();
+}
+function renderQ(){
+  var q=state.list[state.idx], N=state.list.length;
+  $("qno").textContent="第 "+(state.idx+1)+" 問 / "+N+" 問";
+  $("qcat").textContent=q.secName;
+  $("qbar").style.width=((state.idx)/N*100)+"%";
+  $("qtext").textContent=q.d;
+  $("ans").value=state.answers[state.idx];
+  $("prevBtn").disabled=state.idx===0;
+  $("nextBtn").textContent= state.idx===N-1 ? "採点する" : "次へ →";
+  setTimeout(function(){$("ans").focus();},30);
+}
+function saveCurrent(){state.answers[state.idx]=$("ans").value;}
+function next(){
+  saveCurrent();
+  if(state.idx<state.list.length-1){state.idx++;renderQ();}
+  else{
+    var blank=state.answers.filter(function(a){return !norm(a);}).length;
+    if(blank>0 && !confirm("未入力が"+blank+"問あります（不正解になります）。採点しますか？")) return;
+    finish();
+  }
+}
+function prev(){saveCurrent();if(state.idx>0){state.idx--;renderQ();}}
+
+function finish(){
+  var weak=loadWeak(), okN=0;
+  state.results=state.list.map(function(q,i){
+    var ok=judge(q.raw,state.answers[i]);
+    if(ok){okN++; weak=weak.filter(function(id){return id!==q.id;});}
+    else if(weak.indexOf(q.id)<0) weak.push(q.id);
+    return {q:q,mine:state.answers[i],ok:ok};
+  });
+  saveWeak(weak);
+  $("rOk").textContent=okN; $("rAll").textContent=state.list.length;
+  $("rPct").textContent="正答率 "+Math.round(okN/state.list.length*100)+"%";
+  var ng=state.list.length-okN;
+  $("retryWrong").disabled=ng===0;
+  $("retryWrong").textContent= ng? "間違えた"+ng+"問だけ再テスト" : "全問正解！";
+  setTab(ng?"ng":"all");
+  show("result");
+}
+function setTab(t){
+  $("tabNg").classList.toggle("on",t==="ng"); $("tabAll").classList.toggle("on",t==="all");
+  var h="", c=0;
+  state.results.forEach(function(r,i){
+    if(t==="ng" && r.ok) return; c++;
+    h+='<div class="item '+(r.ok?"ok":"ng")+'">'
+      +'<div class="d"><span class="badge '+(r.ok?"ok":"ng")+'">'+(r.ok?"○":"×")+'</span>'+esc(r.q.d)+'</div>'
+      +'<div class="ans">あなたの答え：<span class="mine'+(norm(r.mine)?"":" empty")+'">'+(norm(r.mine)?esc(r.mine):"（未入力）")+'</span><br>'
+      +'正解：<span class="right">'+esc(r.q.a)+'</span></div></div>';
+  });
+  if(!c) h='<div class="card" style="text-align:center">間違えた問題はありません 🎉</div>';
+  $("rList").innerHTML=h;
+}
+
+/* ===== イベント ===== */
+$("cnt").addEventListener("input",updateHome);
+$("allOn").onclick=function(){document.querySelectorAll("#catList input").forEach(function(c){c.checked=true;});updateHome();};
+$("allOff").onclick=function(){document.querySelectorAll("#catList input").forEach(function(c){c.checked=false;});updateHome();};
+$("startBtn").onclick=function(){
+  var secs=selectedSecs(), n=+$("cnt").value;
+  var pool=ALL.filter(function(q){return secs.indexOf(q.sec)>=0;});
+  startQuiz(shuffle(pool).slice(0,Math.min(n,pool.length)),{type:"normal",secs:secs,n:n});
+};
+$("weakBtn").onclick=function(){
+  var w=loadWeak(); if(!w.length) return;
+  startQuiz(shuffle(w.map(function(id){return BYID[id];})),{type:"weak"});
+};
+$("weakClear").onclick=function(){if(confirm("苦手リストを空にしますか？")){saveWeak([]);updateHome();}};
+$("nextBtn").onclick=next;
+$("prevBtn").onclick=prev;
+$("quitBtn").onclick=function(){if(confirm("テストを中断してホームに戻りますか？")){show("home");updateHome();}};
+$("ans").addEventListener("keydown",function(e){
+  if(e.key==="Enter" && !e.isComposing && e.keyCode!==229){e.preventDefault();next();}
+});
+$("tabNg").onclick=function(){setTab("ng");};
+$("tabAll").onclick=function(){setTab("all");};
+$("retryWrong").onclick=function(){
+  var qs=state.results.filter(function(r){return !r.ok;}).map(function(r){return r.q;});
+  if(qs.length) startQuiz(shuffle(qs),{type:"retry"});
+};
+$("retrySame").onclick=function(){
+  var c=state.lastConfig||{};
+  if(c.type==="normal"){
+    var pool=ALL.filter(function(q){return c.secs.indexOf(q.sec)>=0;});
+    startQuiz(shuffle(pool).slice(0,Math.min(c.n,pool.length)),c);
+  }else if(c.type==="weak"){
+    var w=loadWeak(); if(w.length) startQuiz(shuffle(w.map(function(id){return BYID[id];})),c); else {show("home");updateHome();}
+  }else{
+    startQuiz(shuffle(state.list),c);
+  }
+};
+$("toHome").onclick=function(){show("home");updateHome();};
+
+buildHome();
+</script>
+</body>
+</html>
